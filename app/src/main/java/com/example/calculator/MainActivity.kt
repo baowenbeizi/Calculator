@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.Switch
 import android.widget.TextView
+import java.lang.StringBuilder
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private val TAG: String = "Calculator"
+
+    private val numList: ArrayList<Long> = ArrayList()
+    private val operateList: ArrayList<Char> = ArrayList()
+    private val mixList: ArrayList<String> = ArrayList()
 
     private lateinit var mTvResult: TextView
     private lateinit var mBtnOne: Button
@@ -28,55 +32,138 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mBtnMultiply: Button
     private lateinit var mBtnDivide: Button
     private lateinit var mBtnCalculate: Button
+    private lateinit var mBtnCln: Button
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         init()
-        val onClick = OnClick()
-        setClickEvent(onClick)
+        setClickEvent()
     }
 
-    class OnClick: View.OnClickListener {
-        override fun onClick(p0: View?) {
-            when (p0?.id) {
-                R.id.btn_zero -> Log.d("123","x == 0")
-                R.id.btn_one -> Log.d("123","x == 1")
-                R.id.btn_two -> Log.d("123","x == 2")
-                R.id.btn_three -> Log.d("123","x == 3")
-                R.id.btn_four -> Log.d("123","x == 4")
-                R.id.btn_five -> Log.d("123","x == 5")
-                R.id.btn_six -> Log.d("123","x == 6")
-                R.id.btn_seven -> Log.d("123","x == 7")
-                R.id.btn_eight -> Log.d("123","x == 8")
-                R.id.btn_nine -> Log.d("123","x == 9")
-                R.id.btn_calculate -> Log.d("123","x == 0")
-                R.id.btn_add -> Log.d("123","x == +")
-                R.id.btn_subtract -> Log.d("123","x == -")
-                R.id.btn_multiply -> Log.d("123","x == *")
-                R.id.btn_divide -> Log.d("123","x == /")
+    fun addNum(num: Long) {
+        if (numList.size == 0 || operateList.size == numList.size) {
+            numList.add(num)
+            mixList.add(num.toString())
+        } else {
+            val numPlus: Long = numList.get(numList.size - 1) * 10 + num
+            numList.set(numList.size - 1, numPlus)
+            mixList.set(mixList.size - 1, numPlus.toString())
+        }
+        show(mixList)
+    }
+
+    fun addOperate(operate: Char) {
+        if (numList.size == 0) return
+        if (operateList.size < numList.size) {
+            operateList.add(operate)
+            mixList.add(operate.toString())
+        } else if (operateList.size == numList.size) {
+            operateList.set(operateList.size - 1, operate)
+            mixList.set(mixList.size - 1, operate.toString())
+        }
+        show(mixList)
+    }
+
+    fun calculate(): String {
+        for (i in mixList.indices) {
+            if (i > mixList.size - 1) break;
+            if (mixList.get(i).equals("*")) {
+                val tmp: Long = mixList.get(i - 1).toLong() * mixList.get(i + 1).toLong()
+                mixList.set(i - 1, tmp.toString())
+                mixList.removeAt(i)
+                mixList.removeAt(i)
+            } else if (mixList.get(i).equals("/")) {
+                if (mixList.get(i + 1).equals("0")) break;
+                val tmp: Long = mixList.get(i - 1).toLong() / mixList.get(i + 1).toLong()
+                mixList.set(i - 1, tmp.toString())
+                mixList.removeAt(i)
+                mixList.removeAt(i)
             }
         }
 
+        for(i in mixList.indices) {
+            if (i > mixList.size - 1) break;
+            if (mixList.get(i).equals("+")) {
+                val tmp: Long = mixList.get(i - 1).toLong() + mixList.get(i + 1).toLong()
+                mixList.set(i - 1, tmp.toString())
+                mixList.removeAt(i)
+                mixList.removeAt(i)
+            } else if (mixList.get(i).equals("-")) {
+                val tmp: Long = mixList.get(i - 1).toLong() - mixList.get(i + 1).toLong()
+                mixList.set(i - 1, tmp.toString())
+                mixList.removeAt(i)
+                mixList.removeAt(i)
+            }
+        }
+        return mixList.toString()
     }
 
-    fun setClickEvent(onClick: OnClick) {
-        mBtnCalculate.setOnClickListener(onClick)
-        mBtnAdd.setOnClickListener(onClick)
-        mBtnMultiply.setOnClickListener(onClick)
-        mBtnSubtract.setOnClickListener(onClick)
-        mBtnDivide.setOnClickListener(onClick)
-        mBtnOne.setOnClickListener(onClick)
-        mBtnTwo.setOnClickListener(onClick)
-        mBtnThree.setOnClickListener(onClick)
-        mBtnFour.setOnClickListener(onClick)
-        mBtnFive.setOnClickListener(onClick)
-        mBtnSix.setOnClickListener(onClick)
-        mBtnSeven.setOnClickListener(onClick)
-        mBtnEight.setOnClickListener(onClick)
-        mBtnNine.setOnClickListener(onClick)
-        mBtnZero.setOnClickListener(onClick)
+    fun cln() {
+        numList.clear()
+        operateList.clear()
+        mTvResult.setText("0")
+    }
+
+    fun equal() {
+        if (operateList.size == 0) return
+        if (numList.size == operateList.size) {
+            mixList.removeAt(mixList.size - 1)
+            operateList.removeAt(operateList.size - 1)
+        }
+        calculate()
+        show(mixList)
+    }
+
+    fun show(list: ArrayList<String>) {
+        if (list.size == 0) mTvResult.setText("0")
+        var sb: StringBuilder  = StringBuilder()
+        for (item in list) {
+            sb.append(item)
+            mTvResult.setText(sb)
+        }
+    }
+
+    fun setClickEvent() {
+        mBtnCalculate.setOnClickListener(this)
+        mBtnAdd.setOnClickListener(this)
+        mBtnMultiply.setOnClickListener(this)
+        mBtnSubtract.setOnClickListener(this)
+        mBtnDivide.setOnClickListener(this)
+        mBtnOne.setOnClickListener(this)
+        mBtnTwo.setOnClickListener(this)
+        mBtnThree.setOnClickListener(this)
+        mBtnFour.setOnClickListener(this)
+        mBtnFive.setOnClickListener(this)
+        mBtnSix.setOnClickListener(this)
+        mBtnSeven.setOnClickListener(this)
+        mBtnEight.setOnClickListener(this)
+        mBtnNine.setOnClickListener(this)
+        mBtnZero.setOnClickListener(this)
+        mBtnCln.setOnClickListener(this)
+    }
+
+    override fun onClick(p0: View?) {
+        Log.d("baowenbei", "click")
+        when (p0?.id) {
+            R.id.btn_zero -> addNum(0)
+            R.id.btn_one -> addNum(1)
+            R.id.btn_two -> addNum(2)
+            R.id.btn_three -> addNum(3)
+            R.id.btn_four -> addNum(4)
+            R.id.btn_five -> addNum(5)
+            R.id.btn_six -> addNum(6)
+            R.id.btn_seven -> addNum(7)
+            R.id.btn_eight -> addNum(8)
+            R.id.btn_nine -> addNum(9)
+            R.id.btn_calculate -> equal()
+            R.id.btn_add -> addOperate('+')
+            R.id.btn_subtract -> addOperate('-')
+            R.id.btn_multiply -> addOperate('*')
+            R.id.btn_divide -> addOperate('/')
+            R.id.btn_clean -> cln()
+        }
     }
 
     fun init() {
@@ -96,6 +183,7 @@ class MainActivity : AppCompatActivity() {
         mBtnEight = findViewById(R.id.btn_eight)
         mBtnNine = findViewById(R.id.btn_nine)
         mBtnZero = findViewById(R.id.btn_zero)
+        mBtnCln = findViewById(R.id.btn_clean)
     }
 
 }

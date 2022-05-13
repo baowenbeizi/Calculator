@@ -174,6 +174,17 @@
                         android:background="@drawable/bg_frame"
                         android:text="6"
                         android:id="@+id/btn_six"/>
+
+                    <Button
+                        android:textSize="28sp"
+                        android:layout_margin="5dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_frame"
+                        android:text="C"
+                        android:id="@+id/btn_clean"/>
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -212,19 +223,21 @@
                         android:background="@drawable/bg_frame"
                         android:text="9"
                         android:id="@+id/btn_nine"/>
+
+                    <Button
+                        android:textSize="28sp"
+                        android:layout_margin="5dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_frame"
+                        android:text="="
+                        android:id="@+id/btn_calculate"/>
                 </LinearLayout>
 
             </LinearLayout>
 
-            <Button
-                android:textSize="28sp"
-                android:layout_margin="5dp"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/bg_frame"
-                android:text="="
-                android:id="@+id/btn_calculate"/>
+
 
         </LinearLayout>
 
