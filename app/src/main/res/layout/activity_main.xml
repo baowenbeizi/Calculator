@@ -16,6 +16,7 @@
         android:gravity="right|bottom"
         android:background="@drawable/bg_frame"
         android:padding="15dp"
+        android:id="@+id/mtv_result"
         />
 
     <LinearLayout
