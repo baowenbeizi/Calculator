@@ -10,10 +10,8 @@ import java.lang.StringBuilder
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
-    private val TAG: String = "Calculator"
-
-    private val numList: ArrayList<Long> = ArrayList()
-    private val operateList: ArrayList<Char> = ArrayList()
+    private var numCount = 0
+    private var operateCount = 0
     private val mixList: ArrayList<String> = ArrayList()
 
     private lateinit var mTvResult: TextView
@@ -38,43 +36,62 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // 进行控件绑定
         init()
+        // 设置点击事件
         setClickEvent()
+        // 首次进入，重置一次程序
+        cln()
     }
 
+    /**
+     * 点击数字时调用此函数
+     * */
     fun addNum(num: Long) {
-        if (numList.size == 0 || operateList.size == numList.size) {
-            numList.add(num)
+        if (operateCount == numCount) {
+            // 当前为1位的数字
+            numCount++
             mixList.add(num.toString())
         } else {
-            val numPlus: Long = numList.get(numList.size - 1) * 10 + num
-            numList.set(numList.size - 1, numPlus)
+            // 当前为多位的数字
+            val numPlus: Long = mixList.get(mixList.size - 1).toLong() * 10 + num
             mixList.set(mixList.size - 1, numPlus.toString())
         }
+        // 实时展示界面变化
         show(mixList)
     }
 
+    /**
+     * 点击运算符时调用此函数
+     * */
     fun addOperate(operate: Char) {
-        if (numList.size == 0) return
-        if (operateList.size < numList.size) {
-            operateList.add(operate)
+        if (numCount == 0) return
+        if (operateCount < numCount) {
+            operateCount++
             mixList.add(operate.toString())
-        } else if (operateList.size == numList.size) {
-            operateList.set(operateList.size - 1, operate)
+        } else if (operateCount == numCount) {
             mixList.set(mixList.size - 1, operate.toString())
         }
         show(mixList)
     }
 
-    fun calculate(): String {
+    /**
+     * 具体的计算函数
+     * */
+    fun calculate() {
+        // 优先进行乘除运算
         for (i in mixList.indices) {
+            // 兜底判断，防止后续的删除操作导致List长度减小，导致下标溢出
             if (i > mixList.size - 1) break;
             if (mixList.get(i).equals("*")) {
+                // 计算“乘”
                 val tmp: Long = mixList.get(i - 1).toLong() * mixList.get(i + 1).toLong()
+                // 更新值并删除相关操作数
                 mixList.set(i - 1, tmp.toString())
                 mixList.removeAt(i)
                 mixList.removeAt(i)
             } else if (mixList.get(i).equals("/")) {
+                // 对非法输入“除0”进行判断
                 if (mixList.get(i + 1).equals("0")) break;
                 val tmp: Long = mixList.get(i - 1).toLong() / mixList.get(i + 1).toLong()
                 mixList.set(i - 1, tmp.toString())
@@ -83,7 +100,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
 
+        // 进行加减运算
         for(i in mixList.indices) {
+            // 兜底判断，防止后续的删除操作导致List长度减小，导致下标溢出
             if (i > mixList.size - 1) break;
             if (mixList.get(i).equals("+")) {
                 val tmp: Long = mixList.get(i - 1).toLong() + mixList.get(i + 1).toLong()
@@ -97,34 +116,49 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 mixList.removeAt(i)
             }
         }
-        return mixList.toString()
     }
 
-    fun cln() {
-        numList.clear()
-        operateList.clear()
-        mTvResult.setText("0")
-    }
-
+    /**
+     * 点击“=”后调用此函数
+     * */
     fun equal() {
-        if (operateList.size == 0) return
-        if (numList.size == operateList.size) {
+        // 当前只输入数字，不需要计算，直接返回
+        if (operateCount == 0) return
+        // 当前最后一位为运算符，不合法，对最后一位运算符进行删除
+        if (operateCount == numCount) {
             mixList.removeAt(mixList.size - 1)
-            operateList.removeAt(operateList.size - 1)
         }
+        // 计算表达式的值
         calculate()
+        // 进行界面展示
         show(mixList)
     }
 
-    fun show(list: ArrayList<String>) {
-        if (list.size == 0) mTvResult.setText("0")
-        var sb: StringBuilder  = StringBuilder()
-        for (item in list) {
-            sb.append(item)
-            mTvResult.setText(sb)
-        }
+    /**
+     * 重置操作
+     * */
+    fun cln() {
+        operateCount = 0
+        numCount = 0
+        mixList.clear()
+        mTvResult.setText("0")
     }
 
+    /**
+     * 构建表达式的String形式并展示
+     * */
+    fun show(list: ArrayList<String>) {
+        if (list.size == 0) mTvResult.setText("0")
+        var sb = StringBuilder()
+        for (item in list) {
+            sb.append(item)
+        }
+        mTvResult.setText(sb)
+    }
+
+    /**
+     * 设置点击事件
+     * */
     fun setClickEvent() {
         mBtnCalculate.setOnClickListener(this)
         mBtnAdd.setOnClickListener(this)
@@ -144,6 +178,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         mBtnCln.setOnClickListener(this)
     }
 
+    /**
+     * 点击事件的具体代码
+     * */
     override fun onClick(p0: View?) {
         Log.d("baowenbei", "click")
         when (p0?.id) {
@@ -166,6 +203,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    /**
+     * 对控件进行初始化
+     * */
     fun init() {
         mTvResult = findViewById(R.id.mtv_result)
         mBtnAdd = findViewById(R.id.btn_add)
